@@ -1,0 +1,2436 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+  <script>
+    (() => {
+      const stopZoom = (event) => event.preventDefault();
+      document.addEventListener('gesturestart', stopZoom, { passive: false });
+      document.addEventListener('gesturechange', stopZoom, { passive: false });
+      document.addEventListener('gestureend', stopZoom, { passive: false });
+      document.addEventListener('dblclick', stopZoom, { passive: false });
+      document.addEventListener('touchmove', (event) => {
+        if (event.touches.length > 1) event.preventDefault();
+      }, { passive: false });
+      document.addEventListener('wheel', (event) => {
+        if (event.ctrlKey || event.metaKey) event.preventDefault();
+      }, { passive: false });
+      document.addEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && ['+', '-', '=', '0'].includes(event.key)) event.preventDefault();
+      });
+    })();
+  </script>
+  <title>Team Games</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ink: #130022;
+      --line: #000000;
+      --teal: #00b050;
+      --aqua: #00ffff;
+      --aqua-light: #ccffff;
+      --deep: #330066;
+      --lime: #99ff00;
+      --lime-light: #ffff99;
+      --yellow: #ffff00;
+      --red: #ff3300;
+      --hot-pink: #ff00cc;
+      --blue: #0033ff;
+      --button: #ffcc00;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    html {
+      image-rendering: pixelated;
+    }
+
+    body {
+      margin: 0;
+      padding: 8px 8px 30px;
+      color: var(--ink);
+      font-family: "Comic Sans MS", "Trebuchet MS", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 12% 8%, #ffffff 0 0.16rem, transparent 0.18rem),
+        radial-gradient(circle at 70% 18%, var(--yellow) 0 0.22rem, transparent 0.24rem),
+        radial-gradient(circle at 38% 76%, var(--hot-pink) 0 0.18rem, transparent 0.2rem),
+        repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.2) 0 2px, transparent 2px 12px),
+        repeating-linear-gradient(90deg, #0066ff 0 18px, #00cc66 18px 36px, #6600cc 36px 54px, #ff00cc 54px 72px);
+      background-size: 92px 92px, 108px 108px, 76px 76px, 18px 18px, auto;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      min-height: 44px;
+      padding: 9px 12px;
+      color: #000066;
+      background: var(--button);
+      border-top: 4px solid #ffffff;
+      border-left: 4px solid #ffffff;
+      border-right: 4px solid #663300;
+      border-bottom: 4px solid #663300;
+      border-radius: 0;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: underline;
+      text-shadow: 1px 1px 0 #ffffff;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: translate(2px, 2px);
+      border-top-color: #663300;
+      border-left-color: #663300;
+      border-right-color: #ffffff;
+      border-bottom-color: #ffffff;
+    }
+
+    button:disabled {
+      color: #666666;
+      background: #cccccc;
+      cursor: not-allowed;
+      text-shadow: 1px 1px 0 #ffffff;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 10px;
+      color: var(--ink);
+      background: #ffffcc;
+      border-top: 4px solid #330066;
+      border-left: 4px solid #330066;
+      border-right: 4px solid #ffffff;
+      border-bottom: 4px solid #ffffff;
+      border-radius: 0;
+      font-family: "Courier New", Courier, monospace;
+      outline: none;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      color: #000066;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 var(--lime-light);
+    }
+
+    .app {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+      padding: 8px;
+      background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.24) 0 2px, transparent 2px 18px),
+        repeating-linear-gradient(90deg, rgba(255, 0, 204, 0.18) 0 2px, transparent 2px 18px),
+        #00cc66;
+      border: 5px ridge var(--yellow);
+      box-shadow:
+        0 0 0 4px #000000,
+        10px 10px 0 rgba(0, 0, 0, 0.48);
+    }
+
+    .titlebar {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      padding: 22px 8px 12px;
+      background:
+        repeating-linear-gradient(90deg, #000080 0 16px, #330066 16px 32px, #990099 32px 48px),
+        var(--deep);
+      border: 4px ridge var(--aqua);
+      text-align: center;
+    }
+
+    .titlebar::before {
+      content: "";
+      position: absolute;
+      inset: 4px 4px auto 4px;
+      height: 12px;
+      background:
+        repeating-linear-gradient(90deg, #ffffff 0 6px, var(--aqua) 6px 12px, var(--hot-pink) 12px 18px, var(--yellow) 18px 24px);
+      border: 1px solid #000000;
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: "Comic Sans MS", "Courier New", cursive;
+      font-size: clamp(44px, 9vw, 76px);
+      font-weight: 900;
+      color: var(--yellow);
+      text-transform: uppercase;
+      transform: perspective(380px) rotateX(6deg) skewX(-4deg);
+      text-shadow:
+        1px 1px 0 #ffffff,
+        2px 2px 0 var(--hot-pink),
+        3px 3px 0 var(--blue),
+        4px 4px 0 var(--aqua),
+        5px 5px 0 #00aa00,
+        6px 6px 0 #006600,
+        7px 7px 0 #003300,
+        8px 8px 0 #000000,
+        10px 10px 0 #000000,
+        13px 13px 0 rgba(0, 0, 0, 0.35);
+    }
+
+    .badge {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      color: var(--yellow);
+      background: #000080;
+      border: 3px ridge var(--aqua);
+      font-family: "Courier New", Courier, monospace;
+      font-size: 16px;
+      font-weight: 900;
+      text-shadow: 1px 1px 0 #000000;
+    }
+
+    .status {
+      max-width: 100%;
+      padding: 5px 10px;
+      color: #000000;
+      background: var(--lime-light);
+      border: 3px inset var(--aqua);
+      font-family: "Courier New", Courier, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 12px 0 0;
+    }
+
+    .screen-hidden {
+      display: none;
+    }
+
+    .panel {
+      padding: 10px;
+      background:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.32) 0 4px, transparent 4px 12px),
+        #66ff99;
+      border: 5px ridge var(--hot-pink);
+    }
+
+    .panel + .panel {
+      margin-top: 12px;
+    }
+
+    .panel-title {
+      margin: -2px 0 10px;
+      padding: 5px 8px;
+      color: var(--yellow);
+      background:
+        repeating-linear-gradient(90deg, #000080 0 12px, #0000cc 12px 24px, #660099 24px 36px);
+      border: 4px outset var(--aqua);
+      font-family: "Courier New", Courier, monospace;
+      font-size: clamp(18px, 4vw, 28px);
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+      text-shadow:
+        1px 1px 0 var(--hot-pink),
+        2px 2px 0 #000000;
+    }
+
+    .panel-title::before {
+      content: ">> ";
+      color: var(--aqua);
+    }
+
+    .panel-title::after {
+      content: " <<";
+      color: var(--aqua);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 108px;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    #generateGroups {
+      position: relative;
+      overflow: hidden;
+      min-height: 78px;
+      padding: 16px 20px;
+      color: #ffffff;
+      background:
+        repeating-linear-gradient(90deg, var(--hot-pink) 0 12px, var(--yellow) 12px 24px, var(--aqua) 24px 36px, var(--lime) 36px 48px, var(--blue) 48px 60px),
+        var(--hot-pink);
+      background-size: 180px 100%;
+      border-top-width: 6px;
+      border-left-width: 6px;
+      border-right-width: 6px;
+      border-bottom-width: 6px;
+      font-family: "Comic Sans MS", "Trebuchet MS", "Courier New", cursive;
+      font-size: 32px;
+      font-weight: 900;
+      text-transform: uppercase;
+      text-decoration: none;
+      text-shadow:
+        -2px -2px 0 #000000,
+        0 -2px 0 #000000,
+        2px -2px 0 #000000,
+        -2px 0 0 #000000,
+        2px 0 0 #000000,
+        -2px 2px 0 #000000,
+        0 2px 0 #000000,
+        2px 2px 0 #000000,
+        4px 4px 0 var(--hot-pink);
+      box-shadow:
+        inset 0 0 0 4px #000000,
+        0 0 0 4px var(--yellow),
+        0 0 18px var(--aqua),
+        8px 8px 0 #000000;
+      transform-origin: center;
+      animation:
+        newGameRainbow 0.9s steps(6) infinite,
+        newGameFlash 1.2s steps(2) infinite,
+        newGameShake 1.65s steps(1) infinite;
+    }
+
+    #generateGroups:active {
+      animation: none;
+      transform: translate(2px, 2px);
+    }
+
+    #generateGroups::before,
+    #generateGroups::after {
+      position: absolute;
+      inset: 6px;
+      pointer-events: none;
+    }
+
+    #generateGroups::before {
+      content: "";
+      border: 2px dashed #ffffff;
+      animation: newGameDash 0.7s steps(2) infinite;
+    }
+
+    #generateGroups::after {
+      content: ">>>      <<<";
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #ffffff;
+      font-size: 16px;
+      text-shadow:
+        1px 1px 0 #000000,
+        2px 2px 0 var(--hot-pink);
+      animation: newGameBlink 0.55s steps(2) infinite;
+      z-index: 1;
+    }
+
+    .new-game-label {
+      position: relative;
+      z-index: 2;
+      display: inline-block;
+      max-width: 100%;
+      padding: 5px 20px 7px;
+      color: var(--yellow);
+      background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.18) 0 2px, transparent 2px 7px),
+        #000080;
+      border: 4px ridge var(--yellow);
+      font-family: "Comic Sans MS", "Trebuchet MS", "Courier New", cursive;
+      font-style: italic;
+      font-weight: 900;
+      text-transform: uppercase;
+      text-shadow:
+        -2px -2px 0 #000000,
+        0 -2px 0 #000000,
+        2px -2px 0 #000000,
+        -2px 0 0 #000000,
+        2px 0 0 #000000,
+        -2px 2px 0 #000000,
+        0 2px 0 #000000,
+        2px 2px 0 #000000,
+        4px 4px 0 var(--hot-pink);
+      box-shadow:
+        0 0 0 3px #000000,
+        5px 5px 0 var(--hot-pink),
+        -5px -5px 0 var(--aqua);
+      transform: skewX(-7deg) rotate(-1deg);
+      overflow-wrap: anywhere;
+      letter-spacing: 0;
+    }
+
+    .new-game-label::before,
+    .new-game-label::after {
+      color: var(--lime);
+      text-shadow:
+        1px 1px 0 #000000,
+        2px 2px 0 var(--hot-pink);
+    }
+
+    .new-game-label::before {
+      content: "* ";
+    }
+
+    .new-game-label::after {
+      content: " *";
+    }
+
+    #generateGroups:disabled {
+      animation: none;
+      color: #666666;
+      background: #cccccc;
+      box-shadow:
+        inset 0 0 0 4px #999999,
+        4px 4px 0 rgba(0, 0, 0, 0.35);
+      text-shadow: 1px 1px 0 #ffffff;
+    }
+
+    #generateGroups:disabled::before,
+    #generateGroups:disabled::after {
+      display: none;
+    }
+
+    #generateGroups:disabled .new-game-label {
+      color: #666666;
+      background: #eeeeee;
+      border-color: #ffffff;
+      box-shadow:
+        0 0 0 3px #999999;
+      text-shadow: 1px 1px 0 #ffffff;
+      transform: none;
+    }
+
+    @keyframes newGameRainbow {
+      from {
+        background-position: 0 0;
+      }
+
+      to {
+        background-position: 180px 0;
+      }
+    }
+
+    @keyframes newGameFlash {
+      0%,
+      100% {
+        box-shadow:
+          inset 0 0 0 4px #000000,
+          0 0 0 4px var(--yellow),
+          0 0 18px var(--aqua),
+          8px 8px 0 #000000;
+      }
+
+      50% {
+        box-shadow:
+          inset 0 0 0 4px #ffffff,
+          0 0 0 4px var(--hot-pink),
+          0 0 24px var(--yellow),
+          8px 8px 0 #000000;
+      }
+    }
+
+    @keyframes newGameDash {
+      0%,
+      100% {
+        border-color: #ffffff;
+      }
+
+      50% {
+        border-color: #000000;
+      }
+    }
+
+    @keyframes newGameBlink {
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.25;
+      }
+    }
+
+    @keyframes newGameShake {
+      0%,
+      78%,
+      100% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+
+      82% {
+        transform: translate(-1px, 0) rotate(-0.3deg);
+      }
+
+      86% {
+        transform: translate(1px, -1px) rotate(0.3deg);
+      }
+
+      90% {
+        transform: translate(-1px, 1px) rotate(-0.25deg);
+      }
+
+      94% {
+        transform: translate(1px, 0) rotate(0.25deg);
+      }
+    }
+
+    .danger {
+      color: #ffffff;
+      background: var(--red);
+      text-shadow: 1px 1px 0 #000000;
+    }
+
+    .winner-confirm {
+      color: var(--yellow);
+      background: var(--deep);
+      text-shadow: 1px 1px 0 #000000;
+    }
+
+    .secondary {
+      color: #000066;
+      background: var(--aqua);
+    }
+
+    .student-list {
+      display: grid;
+      gap: 7px;
+      padding-right: 2px;
+    }
+
+    .student-row {
+      display: grid;
+      grid-template-columns: 1fr 88px 58px 74px;
+      gap: 7px;
+      align-items: center;
+      padding: 7px;
+      background: #ccffff;
+      border: 4px outset var(--aqua);
+    }
+
+    .student-row.is-hidden {
+      background: #ccccff;
+    }
+
+    .student-row.is-hidden .student-name {
+      color: #663399;
+    }
+
+    .student-name {
+      min-width: 0;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .small-button {
+      min-height: 38px;
+      padding: 5px 3px;
+      font-size: 12px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .stat {
+      min-height: 68px;
+      padding: 8px;
+      background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.38) 0 2px, transparent 2px 8px),
+        var(--yellow);
+      border: 4px ridge var(--blue);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #000080;
+    }
+
+    .stat-value {
+      margin-top: 4px;
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--hot-pink);
+      text-shadow: 1px 1px 0 #ffffff;
+    }
+
+    .leaderboard-list {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .leader-row {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) 72px;
+      align-items: center;
+      min-height: 42px;
+      background: #ccffff;
+      border: 3px outset var(--aqua);
+      overflow: hidden;
+      font-weight: 900;
+    }
+
+    .leader-rank {
+      align-self: stretch;
+      display: grid;
+      place-items: center;
+      color: var(--yellow);
+      background: #000080;
+      border-right: 2px solid var(--line);
+    }
+
+    .leader-name {
+      min-width: 0;
+      padding: 8px 10px;
+      overflow-wrap: anywhere;
+    }
+
+    .leader-wins {
+      align-self: stretch;
+      display: grid;
+      place-items: center;
+      color: #000080;
+      background: var(--yellow);
+      border-left: 2px solid var(--line);
+    }
+
+    .leader-win-input {
+      width: 100%;
+      height: 100%;
+      min-height: 42px;
+      padding: 0 4px;
+      color: #000080;
+      background: var(--yellow);
+      border: 0;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 22px;
+      font-weight: 900;
+      text-align: center;
+      text-shadow: 1px 1px 0 #ffffff;
+      appearance: textfield;
+    }
+
+    .leader-win-input::-webkit-outer-spin-button,
+    .leader-win-input::-webkit-inner-spin-button {
+      margin: 0;
+      appearance: none;
+    }
+
+    .leader-win-input:focus {
+      outline: 3px dashed var(--hot-pink);
+      outline-offset: -5px;
+    }
+
+    .leader-row.top {
+      color: #000000;
+      background: var(--lime);
+      outline: 3px dashed var(--hot-pink);
+    }
+
+    .history-line {
+      min-height: 42px;
+      display: grid;
+      align-items: center;
+      margin-top: 10px;
+      padding: 8px 10px;
+      color: var(--yellow);
+      background: #000080;
+      border: 4px inset var(--hot-pink);
+      font-weight: 900;
+    }
+
+    .archive-title {
+      margin: 12px 0 8px;
+      padding: 5px 8px;
+      color: #000080;
+      background: var(--yellow);
+      border: 4px outset var(--aqua);
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .archive-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .archive-card {
+      background: #ffffcc;
+      border: 4px ridge var(--blue);
+      overflow: hidden;
+    }
+
+    .archive-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto 70px;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      color: var(--yellow);
+      background:
+        repeating-linear-gradient(90deg, #000080 0 12px, #660099 12px 24px);
+      border-bottom: 3px solid var(--line);
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 900;
+    }
+
+    .archive-label,
+    .archive-date {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .archive-date {
+      color: #000080;
+      background: var(--lime);
+      border: 2px solid var(--line);
+      padding: 3px 6px;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .archive-remove {
+      width: 100%;
+      min-height: 34px;
+      padding: 3px;
+      font-size: 12px;
+    }
+
+    .archive-meta {
+      padding: 8px;
+      color: #000080;
+      background: #ccffff;
+      border-bottom: 2px solid var(--line);
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .archive-ranking {
+      margin: 0;
+      padding: 8px 8px 8px 34px;
+      font-weight: 900;
+    }
+
+    .archive-ranking li {
+      padding: 3px 0;
+    }
+
+    .empty.compact {
+      min-height: 68px;
+      margin-top: 8px;
+    }
+
+    .group-clickers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .game-clicker {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr) 82px;
+      gap: 8px;
+      padding: 8px;
+      background:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.34) 0 4px, transparent 4px 12px),
+        #ffffcc;
+      border: 5px ridge var(--aqua);
+    }
+
+    .clicker-label {
+      grid-column: 1 / -1;
+      padding: 5px 8px;
+      color: var(--yellow);
+      background:
+        repeating-linear-gradient(90deg, #000080 0 12px, #660099 12px 24px);
+      border: 4px outset var(--hot-pink);
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 #000000;
+    }
+
+    .clicker-button {
+      min-height: 72px;
+      padding: 6px;
+      font-size: 38px;
+      text-decoration: none;
+    }
+
+    .clicker-count {
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 72px;
+      color: var(--yellow);
+      background: #000080;
+      border: 4px inset var(--hot-pink);
+      font-family: "Courier New", Courier, monospace;
+      font-size: clamp(44px, 14vw, 72px);
+      font-weight: 900;
+      line-height: 1;
+      text-shadow:
+        1px 1px 0 var(--hot-pink),
+        3px 3px 0 #000000;
+      overflow-wrap: anywhere;
+    }
+
+    .clicker-reset {
+      grid-column: 1 / -1;
+      min-height: 38px;
+      padding: 5px;
+      font-size: 13px;
+    }
+
+    .game-timer {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 10px;
+      background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.34) 0 3px, transparent 3px 11px),
+        #ccffff;
+      border: 5px ridge var(--hot-pink);
+    }
+
+    .timer-title {
+      padding: 5px 8px;
+      color: var(--yellow);
+      background:
+        repeating-linear-gradient(90deg, #000080 0 12px, #660099 12px 24px);
+      border: 4px outset var(--aqua);
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 #000000;
+    }
+
+    .timer-presets,
+    .timer-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+      gap: 8px;
+    }
+
+    .timer-preset {
+      min-height: 42px;
+      padding: 6px;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .timer-preset.is-selected {
+      color: var(--yellow);
+      background: #000080;
+      text-shadow: 1px 1px 0 #000000;
+    }
+
+    .timer-display {
+      display: grid;
+      place-items: center;
+      min-height: 88px;
+      color: var(--yellow);
+      background: #000080;
+      border: 5px inset var(--aqua);
+      font-family: "Courier New", Courier, monospace;
+      font-size: clamp(48px, 16vw, 92px);
+      font-weight: 900;
+      line-height: 1;
+      text-shadow:
+        1px 1px 0 var(--hot-pink),
+        4px 4px 0 #000000;
+    }
+
+    .timer-display.is-running {
+      outline: 4px dashed var(--lime);
+      outline-offset: -10px;
+    }
+
+    .timer-display.is-done {
+      color: #ffffff;
+      background: var(--red);
+      border-color: var(--yellow);
+    }
+
+    .timer-control {
+      min-height: 46px;
+      font-size: 15px;
+      text-decoration: none;
+    }
+
+    .game-screen {
+      padding: 10px 0 0;
+    }
+
+    .game-header {
+      display: grid;
+      gap: 10px;
+      padding: 10px 0 12px;
+      border-top: 4px dotted var(--yellow);
+      border-bottom: 4px dotted var(--hot-pink);
+    }
+
+    .game-title {
+      padding: 8px;
+      color: var(--yellow);
+      background:
+        repeating-linear-gradient(90deg, #000080 0 16px, #660099 16px 32px);
+      border: 5px ridge var(--aqua);
+      font-family: "Courier New", Courier, monospace;
+      font-size: clamp(28px, 8vw, 56px);
+      font-weight: 900;
+      text-align: center;
+      text-transform: capitalize;
+      text-shadow:
+        1px 1px 0 #061000,
+        3px 3px 0 #000000;
+    }
+
+    .game-groups {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .group-card {
+      background: #ccffff;
+      border: 5px ridge var(--yellow);
+      overflow: hidden;
+    }
+
+    .group-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px;
+      color: var(--yellow);
+      background: #000080;
+      border-bottom: 3px solid #000000;
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 900;
+    }
+
+    .group-meta {
+      flex: 0 0 auto;
+      padding: 3px 6px;
+      color: #000080;
+      background: var(--lime);
+      border: 2px solid #000000;
+      font-size: 12px;
+    }
+
+    .member-list {
+      margin: 0;
+      padding: 8px;
+      list-style: none;
+    }
+
+    .member-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 32px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(18, 32, 4, 0.28);
+      font-weight: 900;
+    }
+
+    .member-list li:last-child {
+      border-bottom: 0;
+    }
+
+    .group-actions {
+      padding: 8px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.38) 0 3px, transparent 3px 10px),
+        var(--lime);
+      border-top: 3px solid #000000;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 120px;
+      padding: 18px;
+      color: #000080;
+      background: var(--lime-light);
+      border: 3px dashed var(--hot-pink);
+      text-align: center;
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 800;
+    }
+
+    @media (max-width: 520px) {
+      .row,
+      .toolbar,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .student-row {
+        grid-template-columns: 1fr 82px 54px 70px;
+      }
+
+      #generateGroups {
+        min-height: 70px;
+        padding: 14px 16px;
+        font-size: 25px;
+        text-shadow:
+          -2px -2px 0 #000000,
+          0 -2px 0 #000000,
+          2px -2px 0 #000000,
+          -2px 0 0 #000000,
+          2px 0 0 #000000,
+          -2px 2px 0 #000000,
+          0 2px 0 #000000,
+          2px 2px 0 #000000;
+      }
+
+      .new-game-label {
+        padding: 4px 14px 6px;
+      }
+
+      .game-clicker {
+        grid-template-columns: 72px minmax(0, 1fr) 72px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" aria-label="Team Games">
+    <header class="titlebar">
+      <div class="title">
+        <span class="badge" aria-hidden="true">S</span>
+        <span>Team Games</span>
+      </div>
+      <div id="status" class="status" aria-live="polite">Welcome to Team Games!</div>
+    </header>
+
+    <div id="homeScreen" class="layout">
+      <section class="panel">
+        <div class="panel-title">group setup</div>
+        <label for="groupCount">number of groups</label>
+        <input id="groupCount" type="number" min="2" max="12" value="2">
+        <div class="toolbar">
+          <button id="generateGroups" type="button" class="wide" aria-label="new game"><span class="new-game-label">new game</span></button>
+        </div>
+        <div class="summary-grid">
+          <div class="stat">
+            <div class="stat-label">students</div>
+            <div id="studentTotal" class="stat-value">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">games</div>
+            <div id="gameTotal" class="stat-value">0</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">weekly wins</div>
+        <ol id="leaderboard" class="leaderboard-list"></ol>
+        <div id="leaderboardEmpty" class="empty">record a winning group after each game</div>
+        <div id="lastWinner" class="history-line">no games recorded yet</div>
+        <div class="toolbar">
+          <button id="redoWin" type="button" class="secondary">redo wins</button>
+          <button id="undoWin" type="button" class="secondary">undo win</button>
+          <button id="resetWins" type="button" class="danger wide">reset week</button>
+        </div>
+        <div class="archive-title">past weeks</div>
+        <div id="weekArchive" class="archive-list"></div>
+        <div id="weekArchiveEmpty" class="empty compact">no saved weekly stats yet</div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">students</div>
+        <div class="row">
+          <div>
+            <label for="studentName">name</label>
+            <input id="studentName" autocomplete="off" placeholder="Student name">
+          </div>
+          <div>
+            <label for="studentRating">rating</label>
+            <select id="studentRating">
+              <option value="na" selected>N/A</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button id="addStudent" type="button">add</button>
+          <button id="sortStudents" type="button" class="secondary">sort</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">Roster</div>
+        <div id="studentList" class="student-list"></div>
+      </section>
+    </div>
+
+    <section id="gameScreen" class="game-screen screen-hidden" aria-label="Current game groups">
+      <header class="game-header">
+        <div class="game-title">new game</div>
+        <button id="backToHome" type="button" class="secondary">back</button>
+      </header>
+      <div id="gameGroups" class="game-groups"></div>
+      <div id="groupClickers" class="group-clickers" aria-label="Group tally counters"></div>
+      <section id="gameTimer" class="game-timer" aria-label="Countdown timer">
+        <div class="timer-title">countdown timer</div>
+        <div id="timerPresets" class="timer-presets" aria-label="Timer presets"></div>
+        <div id="timerDisplay" class="timer-display" aria-live="polite">1:00</div>
+        <div class="timer-controls">
+          <button id="timerStart" type="button" class="timer-control">start</button>
+          <button id="timerPause" type="button" class="timer-control secondary">pause</button>
+          <button id="timerReset" type="button" class="timer-control danger">reset</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "camp-group-randomizer-v1";
+
+    const studentName = document.getElementById("studentName");
+    const studentRating = document.getElementById("studentRating");
+    const addStudentButton = document.getElementById("addStudent");
+    const sortStudentsButton = document.getElementById("sortStudents");
+    const groupCountInput = document.getElementById("groupCount");
+    const generateGroupsButton = document.getElementById("generateGroups");
+    const studentList = document.getElementById("studentList");
+    const status = document.getElementById("status");
+    const studentTotal = document.getElementById("studentTotal");
+    const gameTotal = document.getElementById("gameTotal");
+    const leaderboard = document.getElementById("leaderboard");
+    const leaderboardEmpty = document.getElementById("leaderboardEmpty");
+    const lastWinner = document.getElementById("lastWinner");
+    const weekArchiveList = document.getElementById("weekArchive");
+    const weekArchiveEmpty = document.getElementById("weekArchiveEmpty");
+    const redoWinButton = document.getElementById("redoWin");
+    const undoWinButton = document.getElementById("undoWin");
+    const resetWinsButton = document.getElementById("resetWins");
+    const homeScreen = document.getElementById("homeScreen");
+    const gameScreen = document.getElementById("gameScreen");
+    const gameGroups = document.getElementById("gameGroups");
+    const backToHomeButton = document.getElementById("backToHome");
+    const groupClickers = document.getElementById("groupClickers");
+    const timerPresets = document.getElementById("timerPresets");
+    const timerDisplay = document.getElementById("timerDisplay");
+    const timerStartButton = document.getElementById("timerStart");
+    const timerPauseButton = document.getElementById("timerPause");
+    const timerResetButton = document.getElementById("timerReset");
+
+    const TIMER_PRESETS = [
+      { label: "30 sec", seconds: 30 },
+      { label: "45 sec", seconds: 45 },
+      { label: "1 min", seconds: 60 },
+      { label: "2 min", seconds: 120 },
+      { label: "3 min", seconds: 180 },
+      { label: "5 min", seconds: 300 },
+      { label: "10 min", seconds: 600 }
+    ];
+
+    let students = [];
+    let archivedStudents = [];
+    let groups = [];
+    let winHistory = [];
+    let redoWinHistory = [];
+    let weekArchive = [];
+    let groupTallies = [];
+    let timerDuration = 60;
+    let timerRemaining = 60;
+    let timerRunning = false;
+    let timerEndTime = null;
+    let timerInterval = null;
+    let audioContext = null;
+    let pendingWinnerIndex = null;
+    let pendingWinnerTimer = null;
+    let pendingUndoWin = false;
+    let pendingUndoTimer = null;
+    let pendingResetWins = false;
+    let pendingResetTimer = null;
+    let pendingRemoveStudentId = null;
+    let pendingRemoveTimer = null;
+    let pendingRemoveWeekId = null;
+    let pendingRemoveWeekTimer = null;
+
+    function makeId() {
+      return String(Date.now()) + "-" + Math.random().toString(36).slice(2, 8);
+    }
+
+    function setStatus(message) {
+      status.textContent = message;
+    }
+
+    function getAudioContext() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return null;
+      if (!audioContext) audioContext = new AudioContextClass();
+      return audioContext;
+    }
+
+    function playTone(context, frequency, offset, duration, wave = "square", volume = 0.045) {
+      const start = context.currentTime + offset;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+
+      oscillator.type = wave;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.03);
+    }
+
+    function playSound(name) {
+      const context = getAudioContext();
+      if (!context) return;
+
+      const patterns = {
+        tap: [[520, 0, 0.045]],
+        add: [[620, 0, 0.055], [820, 0.06, 0.075]],
+        show: [[420, 0, 0.05], [640, 0.055, 0.08]],
+        hide: [[420, 0, 0.05], [260, 0.055, 0.08]],
+        remove: [[260, 0, 0.055, "sawtooth"], [170, 0.055, 0.09, "sawtooth"]],
+        generate: [[330, 0, 0.055], [440, 0.055, 0.055], [660, 0.11, 0.08], [880, 0.19, 0.1]],
+        win: [
+          [523, 0, 0.12, "square", 0.07],
+          [659, 0.08, 0.12, "square", 0.075],
+          [784, 0.16, 0.14, "square", 0.08],
+          [1047, 0.28, 0.2, "triangle", 0.09],
+          [1319, 0.44, 0.24, "triangle", 0.075],
+          [784, 0.52, 0.28, "sine", 0.045]
+        ],
+        undo: [[392, 0, 0.06], [330, 0.065, 0.08]],
+        redo: [[330, 0, 0.055], [392, 0.055, 0.055], [523, 0.11, 0.09]],
+        reset: [[220, 0, 0.08, "sawtooth"], [185, 0.08, 0.1, "sawtooth"], [147, 0.18, 0.14, "sawtooth"]],
+        timerTick: [[1100, 0, 0.035, "square", 0.055]],
+        timerDone: [[880, 0, 0.16, "triangle", 0.09], [1175, 0.22, 0.18, "triangle", 0.09], [1568, 0.46, 0.28, "triangle", 0.1]],
+        cancel: [[220, 0, 0.06, "triangle"]],
+        error: [[160, 0, 0.07, "sawtooth"], [110, 0.08, 0.12, "sawtooth"]]
+      };
+
+      const tones = patterns[name] || patterns.tap;
+      const play = () => {
+        tones.forEach(([frequency, offset, duration, wave = "square", volume = 0.045]) => {
+          playTone(context, frequency, offset, duration, wave, volume);
+        });
+      };
+
+      if (context.state === "suspended") {
+        context.resume().then(play).catch(() => {});
+      } else {
+        play();
+      }
+    }
+
+    function normalizeRating(value) {
+      if (value === "na" || value === null || value === undefined || value === "") return null;
+      const rating = Number(value);
+      if (!Number.isFinite(rating)) return null;
+      return Math.min(5, Math.max(1, Math.round(rating)));
+    }
+
+    function ratingLabel(student) {
+      return student.rating === null ? "N/A" : String(student.rating);
+    }
+
+    function shouldUseRatings(roster = getGroupEligibleStudents()) {
+      return roster.length > 0 && roster.every((student) => student.rating !== null);
+    }
+
+    function save() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          students,
+          archivedStudents,
+          groupCount: groupCountInput.value,
+          winHistory,
+          redoWinHistory,
+          weekArchive,
+          groupTallies,
+          timerDuration,
+          timerRemaining
+        }));
+      } catch (error) {
+        setStatus("local save unavailable");
+      }
+    }
+
+    function normalizeArchiveNames(names) {
+      if (!Array.isArray(names)) return [];
+      return names
+        .filter((name) => typeof name === "string")
+        .map((name) => cleanName(name))
+        .filter(Boolean);
+    }
+
+    function normalizeArchiveRanking(ranking) {
+      if (!Array.isArray(ranking)) return [];
+      return ranking
+        .filter((student) => student && typeof student.name === "string")
+        .map((student) => ({
+          name: cleanName(student.name),
+          wins: Math.max(0, Math.round(Number.isFinite(Number(student.wins)) ? Number(student.wins) : 0))
+        }))
+        .filter((student) => student.name);
+    }
+
+    function normalizeWeekArchiveEntry(entry, index) {
+      if (!entry || typeof entry !== "object") return null;
+      const totalGames = Math.max(0, Math.round(Number.isFinite(Number(entry.totalGames)) ? Number(entry.totalGames) : 0));
+      const winners = normalizeArchiveNames(entry.winners);
+      const ranking = normalizeArchiveRanking(entry.ranking);
+      if (!totalGames && !winners.length && !ranking.length) return null;
+
+      return {
+        id: typeof entry.id === "string" ? entry.id : makeId(),
+        weekNumber: Math.max(1, Math.round(Number.isFinite(Number(entry.weekNumber)) ? Number(entry.weekNumber) : index + 1)),
+        endedAt: typeof entry.endedAt === "string" ? entry.endedAt : new Date().toISOString(),
+        totalGames,
+        winners,
+        ranking
+      };
+    }
+
+    function load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        if (Array.isArray(saved.students)) {
+          students = saved.students
+            .filter((student) => student && typeof student.name === "string")
+            .map((student) => ({
+              id: student.id || makeId(),
+              name: student.name.trim(),
+              rating: normalizeRating(student.rating),
+              wins: Number.isFinite(Number(student.wins)) ? Number(student.wins) : 0,
+              active: student.active !== false
+            }))
+            .filter((student) => student.name);
+        }
+        if (Array.isArray(saved.archivedStudents)) {
+          archivedStudents = saved.archivedStudents
+            .filter((student) => student && typeof student.name === "string")
+            .map((student) => ({
+              id: student.id || makeId(),
+              name: student.name.trim(),
+              rating: normalizeRating(student.rating),
+              wins: Number.isFinite(Number(student.wins)) ? Number(student.wins) : 0,
+              active: false
+            }))
+            .filter((student) => student.name)
+            .filter((student) => !students.some((activeStudent) => activeStudent.id === student.id));
+        }
+        if (saved.groupCount) groupCountInput.value = saved.groupCount;
+        if (Array.isArray(saved.winHistory)) {
+          winHistory = saved.winHistory.filter((entry) => entry && Array.isArray(entry.memberIds));
+        }
+        if (Array.isArray(saved.redoWinHistory)) {
+          redoWinHistory = saved.redoWinHistory.filter((entry) => entry && Array.isArray(entry.memberIds));
+        }
+        if (Array.isArray(saved.weekArchive)) {
+          weekArchive = saved.weekArchive
+            .map((entry, index) => normalizeWeekArchiveEntry(entry, index))
+            .filter(Boolean);
+        }
+        if (Array.isArray(saved.groupTallies)) {
+          groupTallies = saved.groupTallies.map((score) => normalizeWins(score));
+        }
+        timerDuration = normalizeTimerSeconds(saved.timerDuration, 60);
+        timerRemaining = normalizeTimerSeconds(saved.timerRemaining, timerDuration);
+      } catch (error) {
+        students = [];
+        archivedStudents = [];
+        winHistory = [];
+        redoWinHistory = [];
+        weekArchive = [];
+        groupTallies = [];
+        timerDuration = 60;
+        timerRemaining = 60;
+      }
+    }
+
+    function shuffle(items) {
+      const mixed = items.slice();
+      for (let index = mixed.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [mixed[index], mixed[swapIndex]] = [mixed[swapIndex], mixed[index]];
+      }
+      return mixed;
+    }
+
+    function groupLabel(index) {
+      return "Group " + (index + 1);
+    }
+
+    function cleanName(name) {
+      return name.trim().replace(/\s+/g, " ");
+    }
+
+    function addStudent(name, rating) {
+      const cleaned = cleanName(name);
+      if (!cleaned) return false;
+
+      const existing = students.find((student) => student.name.toLowerCase() === cleaned.toLowerCase());
+      if (existing) {
+        existing.rating = normalizeRating(rating);
+        existing.active = true;
+        return false;
+      }
+
+      const archivedIndex = archivedStudents.findIndex((student) => student.name.toLowerCase() === cleaned.toLowerCase());
+      if (archivedIndex >= 0) {
+        archivedStudents.splice(archivedIndex, 1);
+      }
+
+      students.push({
+        id: makeId(),
+        name: cleaned,
+        rating: normalizeRating(rating),
+        wins: 0,
+        active: true
+      });
+      return true;
+    }
+
+    function getStudentWins(student) {
+      const wins = Number(student.wins);
+      return Number.isFinite(wins) ? wins : 0;
+    }
+
+    function normalizeWins(value) {
+      const wins = Number(value);
+      if (!Number.isFinite(wins)) return 0;
+      return Math.max(0, Math.round(wins));
+    }
+
+    function setStudentWins(student, value) {
+      const wins = normalizeWins(value);
+      student.wins = wins;
+      save();
+      render();
+      playSound("tap");
+      setStatus(student.name + " weekly wins set to " + wins);
+    }
+
+    function normalizeTimerSeconds(value, fallback = 60) {
+      const seconds = Number(value);
+      if (!Number.isFinite(seconds)) return fallback;
+      return Math.min(600, Math.max(0, Math.round(seconds)));
+    }
+
+    function formatTimer(seconds) {
+      const normalized = normalizeTimerSeconds(seconds, 0);
+      const minutes = Math.floor(normalized / 60);
+      const remainder = normalized % 60;
+      return minutes + ":" + String(remainder).padStart(2, "0");
+    }
+
+    function clearTimerInterval() {
+      if (timerInterval) {
+        window.clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function syncTimerRemaining() {
+      if (!timerRunning || !timerEndTime) return;
+      timerRemaining = Math.max(0, Math.ceil((timerEndTime - Date.now()) / 1000));
+    }
+
+    function stopTimer(shouldSave = true) {
+      clearTimerInterval();
+      timerRunning = false;
+      timerEndTime = null;
+      if (shouldSave) save();
+      renderTimer();
+    }
+
+    function resetTimerState(shouldSave = true) {
+      stopTimer(false);
+      timerRemaining = timerDuration;
+      if (shouldSave) save();
+      renderTimer();
+    }
+
+    function selectTimerPreset(seconds) {
+      timerDuration = normalizeTimerSeconds(seconds, 60);
+      timerRemaining = timerDuration;
+      stopTimer(false);
+      save();
+      renderTimer();
+      playSound("tap");
+      setStatus("timer set to " + formatTimer(timerDuration));
+    }
+
+    function startTimer() {
+      if (timerRunning) return;
+      if (timerRemaining <= 0) timerRemaining = timerDuration;
+      timerRunning = true;
+      timerEndTime = Date.now() + timerRemaining * 1000;
+      clearTimerInterval();
+      timerInterval = window.setInterval(tickTimer, 250);
+      save();
+      renderTimer();
+      playSound("tap");
+      setStatus("timer started");
+    }
+
+    function pauseTimer() {
+      if (!timerRunning) return;
+      syncTimerRemaining();
+      stopTimer();
+      playSound("tap");
+      setStatus("timer paused at " + formatTimer(timerRemaining));
+    }
+
+    function resetTimer() {
+      resetTimerState();
+      playSound("reset");
+      setStatus("timer reset");
+    }
+
+    function tickTimer() {
+      if (!timerRunning) return;
+      const previous = timerRemaining;
+      syncTimerRemaining();
+      if (timerRemaining !== previous) {
+        save();
+        renderTimer();
+        if (timerRemaining > 0 && timerRemaining <= 10) {
+          playSound("timerTick");
+        }
+      }
+      if (timerRemaining <= 0) {
+        stopTimer(false);
+        timerRemaining = 0;
+        save();
+        renderTimer();
+        playSound("timerDone");
+        setStatus("time");
+      }
+    }
+
+    function restoreTimer(timerSnapshot) {
+      stopTimer(false);
+      if (timerSnapshot && typeof timerSnapshot === "object") {
+        timerDuration = normalizeTimerSeconds(timerSnapshot.duration, timerDuration);
+        timerRemaining = normalizeTimerSeconds(timerSnapshot.remaining, timerDuration);
+      } else {
+        timerRemaining = timerDuration;
+      }
+      save();
+      renderTimer();
+    }
+
+    function renderTimer() {
+      timerPresets.innerHTML = "";
+      TIMER_PRESETS.forEach((preset) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "timer-preset";
+        if (preset.seconds === timerDuration) button.classList.add("is-selected");
+        button.textContent = preset.label;
+        button.setAttribute("aria-pressed", preset.seconds === timerDuration ? "true" : "false");
+        button.addEventListener("click", () => selectTimerPreset(preset.seconds));
+        timerPresets.appendChild(button);
+      });
+
+      timerDisplay.textContent = formatTimer(timerRemaining);
+      timerDisplay.classList.toggle("is-running", timerRunning);
+      timerDisplay.classList.toggle("is-done", !timerRunning && timerRemaining === 0);
+      timerStartButton.disabled = timerRunning;
+      timerPauseButton.disabled = !timerRunning;
+      timerResetButton.disabled = !timerRunning && timerRemaining === timerDuration;
+      timerStartButton.textContent = timerRemaining > 0 && timerRemaining < timerDuration ? "resume" : "start";
+    }
+
+    function snapshotGroups() {
+      return groups.map((group) => ({
+        members: group.members.map((member) => ({
+          id: member.id,
+          name: member.name,
+          rating: member.rating
+        }))
+      }));
+    }
+
+    function restoreGroups(groupSnapshot) {
+      if (!Array.isArray(groupSnapshot)) return false;
+
+      const restoredGroups = groupSnapshot
+        .map((group) => ({
+          members: Array.isArray(group.members)
+            ? group.members
+                .filter((member) => member && typeof member.name === "string")
+                .map((member) => findKnownStudent(member.id) || {
+                  id: member.id || makeId(),
+                  name: cleanName(member.name),
+                  rating: normalizeRating(member.rating)
+                })
+                .filter((member) => member.name)
+            : []
+        }))
+        .filter((group) => group.members.length);
+
+      if (!restoredGroups.length) return false;
+      groups = restoredGroups;
+      return true;
+    }
+
+    function ensureGroupTallies(count = groups.length) {
+      groupTallies = Array.from({ length: count }, (_, index) => normalizeWins(groupTallies[index]));
+    }
+
+    function getGroupTally(index) {
+      return normalizeWins(groupTallies[index]);
+    }
+
+    function setGroupTally(index, value) {
+      ensureGroupTallies();
+      groupTallies[index] = normalizeWins(value);
+      save();
+      renderGroupClickers();
+      playSound("tap");
+      setStatus(groupLabel(index) + " tally " + groupTallies[index]);
+    }
+
+    function restoreGroupTallies(latest) {
+      if (Array.isArray(latest.groupTallies)) {
+        groupTallies = latest.groupTallies.map((score) => normalizeWins(score));
+      } else {
+        groupTallies = Array.from({ length: groups.length }, (_, index) => index === 0 ? normalizeWins(latest.gameTally) : 0);
+      }
+      ensureGroupTallies(groups.length);
+    }
+
+    function renderGroupClickers() {
+      groupClickers.innerHTML = "";
+      if (!groups.length) return;
+
+      ensureGroupTallies(groups.length);
+      groups.forEach((_group, index) => {
+        const score = getGroupTally(index);
+        const panel = document.createElement("section");
+        panel.className = "game-clicker";
+        panel.setAttribute("aria-label", groupLabel(index) + " tally counter");
+
+        const label = document.createElement("div");
+        label.className = "clicker-label";
+        label.textContent = groupLabel(index) + " tally";
+
+        const minus = document.createElement("button");
+        minus.type = "button";
+        minus.className = "clicker-button secondary";
+        minus.textContent = "-";
+        minus.disabled = score <= 0;
+        minus.setAttribute("aria-label", "Subtract one from " + groupLabel(index) + " tally");
+        minus.addEventListener("click", () => setGroupTally(index, score - 1));
+
+        const count = document.createElement("div");
+        count.className = "clicker-count";
+        count.setAttribute("aria-live", "polite");
+        count.textContent = String(score);
+
+        const plus = document.createElement("button");
+        plus.type = "button";
+        plus.className = "clicker-button";
+        plus.textContent = "+";
+        plus.setAttribute("aria-label", "Add one to " + groupLabel(index) + " tally");
+        plus.addEventListener("click", () => setGroupTally(index, score + 1));
+
+        const reset = document.createElement("button");
+        reset.type = "button";
+        reset.className = "clicker-reset danger";
+        reset.textContent = "reset " + groupLabel(index);
+        reset.disabled = score <= 0;
+        reset.addEventListener("click", () => setGroupTally(index, 0));
+
+        panel.append(label, minus, count, plus, reset);
+        groupClickers.appendChild(panel);
+      });
+    }
+
+    function getGroupCount() {
+      const count = Number(groupCountInput.value);
+      if (!Number.isFinite(count)) return 2;
+      return Math.min(12, Math.max(2, Math.round(count)));
+    }
+
+    function getGroupEligibleStudents() {
+      return students.filter((student) => student.active !== false);
+    }
+
+    function getAllKnownStudents() {
+      return students.slice();
+    }
+
+    function findKnownStudent(id) {
+      return students.find((student) => student.id === id);
+    }
+
+    function clearRemoveStudentConfirm(shouldRender = true) {
+      pendingRemoveStudentId = null;
+      if (pendingRemoveTimer) {
+        window.clearTimeout(pendingRemoveTimer);
+        pendingRemoveTimer = null;
+      }
+      if (shouldRender) renderStudents();
+    }
+
+    function armRemoveStudentConfirm(student) {
+      pendingRemoveStudentId = student.id;
+      if (pendingRemoveTimer) window.clearTimeout(pendingRemoveTimer);
+      renderStudents();
+      playSound("tap");
+      setStatus("tap confirm to delete " + student.name);
+      pendingRemoveTimer = window.setTimeout(() => {
+        pendingRemoveTimer = null;
+        pendingRemoveStudentId = null;
+        renderStudents();
+        setStatus("delete cancelled");
+      }, 5000);
+    }
+
+    function removeStudentFromRoster(student) {
+      if (pendingRemoveStudentId !== student.id) {
+        armRemoveStudentConfirm(student);
+        return;
+      }
+
+      clearRemoveStudentConfirm(false);
+      archivedStudents = archivedStudents.filter((item) => item.id !== student.id && item.name.toLowerCase() !== student.name.toLowerCase());
+      students = students.filter((item) => item.id !== student.id);
+      groups = [];
+      save();
+      render();
+      playSound("remove");
+      setStatus(student.name + " deleted from roster and leaderboard");
+    }
+
+    function renderStudents() {
+      studentList.innerHTML = "";
+
+      if (!students.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "no students yet";
+        studentList.appendChild(empty);
+      }
+
+      students.forEach((student) => {
+        const isActive = student.active !== false;
+        const isPendingRemove = pendingRemoveStudentId === student.id;
+        const row = document.createElement("div");
+        row.className = "student-row";
+        if (!isActive) row.classList.add("is-hidden");
+
+        const name = document.createElement("div");
+        name.className = "student-name";
+        name.textContent = isActive ? student.name : student.name + " (out)";
+
+        const rating = document.createElement("select");
+        rating.setAttribute("aria-label", "Rating for " + student.name);
+        const options = [["na", "N/A"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"]];
+        options.forEach(([value, label]) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = label;
+          rating.appendChild(option);
+        });
+        rating.value = student.rating === null ? "na" : String(student.rating);
+        rating.addEventListener("change", () => {
+          student.rating = normalizeRating(rating.value);
+          save();
+          render();
+          playSound("tap");
+          setStatus(student.name + " rating set to " + ratingLabel(student));
+        });
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "small-button secondary";
+        toggle.textContent = isActive ? "hide" : "show";
+        toggle.setAttribute("aria-label", (isActive ? "Hide " : "Show ") + student.name + " for groups");
+        toggle.addEventListener("click", () => {
+          clearRemoveStudentConfirm(false);
+          student.active = !isActive;
+          groups = [];
+          save();
+          render();
+          playSound(student.active ? "show" : "hide");
+          setStatus(student.name + (student.active ? " is back in groups" : " hidden from groups"));
+        });
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = isPendingRemove ? "small-button winner-confirm" : "small-button danger";
+        remove.textContent = isPendingRemove ? "confirm" : "x";
+        remove.setAttribute("aria-label", (isPendingRemove ? "Confirm delete " : "Delete ") + student.name + " from roster and leaderboard");
+        remove.addEventListener("click", () => removeStudentFromRoster(student));
+
+        row.append(name, rating, toggle, remove);
+        studentList.appendChild(row);
+      });
+    }
+
+    function getRankedStudents() {
+      return getAllKnownStudents()
+        .slice()
+        .sort((a, b) => getStudentWins(b) - getStudentWins(a) || a.name.localeCompare(b.name));
+    }
+
+    function hasCurrentWeekStats() {
+      return winHistory.length > 0 || getAllKnownStudents().some((student) => getStudentWins(student) > 0);
+    }
+
+    function buildWeekArchiveEntry() {
+      const ranking = getRankedStudents().map((student) => ({
+        name: student.name,
+        wins: getStudentWins(student)
+      }));
+      const topWins = ranking.length ? ranking[0].wins : 0;
+      const winners = topWins > 0
+        ? ranking.filter((student) => student.wins === topWins).map((student) => student.name)
+        : [];
+
+      return {
+        id: makeId(),
+        weekNumber: weekArchive.reduce((highest, entry) => Math.max(highest, Number(entry.weekNumber) || 0), 0) + 1,
+        endedAt: new Date().toISOString(),
+        totalGames: winHistory.length,
+        winners,
+        ranking
+      };
+    }
+
+    function archiveCurrentWeek() {
+      if (!hasCurrentWeekStats()) return null;
+      const entry = buildWeekArchiveEntry();
+      weekArchive.push(entry);
+      return entry;
+    }
+
+    function formatArchiveDate(endedAt) {
+      const date = new Date(endedAt);
+      if (Number.isNaN(date.getTime())) return "saved";
+      return date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+    }
+
+    function clearRemoveWeekConfirm(shouldRender = true) {
+      pendingRemoveWeekId = null;
+      if (pendingRemoveWeekTimer) {
+        window.clearTimeout(pendingRemoveWeekTimer);
+        pendingRemoveWeekTimer = null;
+      }
+      if (shouldRender) renderWeekArchive();
+    }
+
+    function armRemoveWeekConfirm(entry) {
+      pendingRemoveWeekId = entry.id;
+      if (pendingRemoveWeekTimer) window.clearTimeout(pendingRemoveWeekTimer);
+      renderWeekArchive();
+      playSound("tap");
+      setStatus("tap confirm to delete week " + entry.weekNumber);
+      pendingRemoveWeekTimer = window.setTimeout(() => {
+        pendingRemoveWeekTimer = null;
+        pendingRemoveWeekId = null;
+        renderWeekArchive();
+        setStatus("week delete cancelled");
+      }, 5000);
+    }
+
+    function removeWeekArchiveEntry(entry) {
+      if (pendingRemoveWeekId !== entry.id) {
+        armRemoveWeekConfirm(entry);
+        return;
+      }
+
+      clearRemoveWeekConfirm(false);
+      weekArchive = weekArchive.filter((item) => item.id !== entry.id);
+      save();
+      render();
+      playSound("remove");
+      setStatus("week " + entry.weekNumber + " stats deleted");
+    }
+
+    function renderWeekArchive() {
+      weekArchiveList.innerHTML = "";
+      weekArchiveEmpty.style.display = weekArchive.length ? "none" : "grid";
+
+      weekArchive.slice().reverse().forEach((entry) => {
+        const isPendingRemove = pendingRemoveWeekId === entry.id;
+        const card = document.createElement("article");
+        card.className = "archive-card";
+
+        const head = document.createElement("div");
+        head.className = "archive-head";
+
+        const label = document.createElement("div");
+        label.className = "archive-label";
+        label.textContent = "week " + entry.weekNumber;
+
+        const date = document.createElement("div");
+        date.className = "archive-date";
+        date.textContent = formatArchiveDate(entry.endedAt);
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = isPendingRemove ? "archive-remove winner-confirm" : "archive-remove danger";
+        remove.textContent = isPendingRemove ? "confirm" : "x";
+        remove.setAttribute("aria-label", (isPendingRemove ? "Confirm delete " : "Delete ") + "week " + entry.weekNumber + " stats");
+        remove.addEventListener("click", () => removeWeekArchiveEntry(entry));
+
+        const meta = document.createElement("div");
+        meta.className = "archive-meta";
+        const winnerLabel = entry.winners.length === 1 ? "winner: " : "winners: ";
+        meta.textContent = "games: " + entry.totalGames + " | " + winnerLabel + (entry.winners.length ? entry.winners.join(", ") : "none");
+
+        const ranking = document.createElement("ol");
+        ranking.className = "archive-ranking";
+        entry.ranking.forEach((student) => {
+          const item = document.createElement("li");
+          item.textContent = student.name + " - " + student.wins;
+          ranking.appendChild(item);
+        });
+
+        head.append(label, date, remove);
+        card.append(head, meta, ranking);
+        weekArchiveList.appendChild(card);
+      });
+    }
+
+    function renderLeaderboard() {
+      leaderboard.innerHTML = "";
+      const ranked = getRankedStudents();
+      const hasWins = ranked.some((student) => getStudentWins(student) > 0);
+      const highScore = hasWins ? getStudentWins(ranked[0]) : 0;
+      leaderboardEmpty.style.display = ranked.length ? "none" : "grid";
+
+      ranked.forEach((student, index) => {
+        const row = document.createElement("li");
+        row.className = "leader-row";
+        if (hasWins && getStudentWins(student) === highScore) row.classList.add("top");
+
+        const rank = document.createElement("span");
+        rank.className = "leader-rank";
+        rank.textContent = String(index + 1);
+
+        const name = document.createElement("span");
+        name.className = "leader-name";
+        name.textContent = student.name;
+
+        const wins = document.createElement("span");
+        wins.className = "leader-wins";
+        const winsInput = document.createElement("input");
+        winsInput.className = "leader-win-input";
+        winsInput.type = "number";
+        winsInput.min = "0";
+        winsInput.step = "1";
+        winsInput.inputMode = "numeric";
+        winsInput.value = String(getStudentWins(student));
+        winsInput.setAttribute("aria-label", "Weekly wins for " + student.name);
+        winsInput.addEventListener("change", () => setStudentWins(student, winsInput.value));
+        winsInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") winsInput.blur();
+        });
+        wins.appendChild(winsInput);
+
+        row.append(rank, name, wins);
+        leaderboard.appendChild(row);
+      });
+
+      if (winHistory.length) {
+        const latest = winHistory[winHistory.length - 1];
+        lastWinner.textContent = "last: " + latest.groupName + " - " + latest.memberNames.join(", ");
+      } else {
+        lastWinner.textContent = "no games recorded yet";
+      }
+    }
+
+    function updateStats() {
+      const eligibleStudents = getGroupEligibleStudents();
+      studentTotal.textContent = eligibleStudents.length === students.length ? String(students.length) : eligibleStudents.length + "/" + students.length;
+      gameTotal.textContent = winHistory.length;
+      generateGroupsButton.disabled = eligibleStudents.length < 2;
+      redoWinButton.disabled = redoWinHistory.length === 0;
+      renderUndoWinButton();
+      renderResetWinsButton();
+    }
+
+    function render() {
+      groupCountInput.value = String(getGroupCount());
+      renderStudents();
+      renderLeaderboard();
+      renderWeekArchive();
+      renderTimer();
+      updateStats();
+    }
+
+    function generateFairGroups() {
+      const eligibleStudents = getGroupEligibleStudents();
+      if (eligibleStudents.length < 2) {
+        playSound("error");
+        setStatus("show at least two students for groups");
+        return;
+      }
+
+      clearWinningGroupConfirm(false);
+      clearRemoveStudentConfirm(false);
+      const count = Math.min(getGroupCount(), eligibleStudents.length);
+      groupCountInput.value = String(count);
+      groupTallies = Array.from({ length: count }, () => 0);
+      resetTimerState(false);
+      const useRatings = shouldUseRatings(eligibleStudents);
+      const sorted = useRatings
+        ? shuffle(eligibleStudents).slice().sort((a, b) => b.rating - a.rating)
+        : shuffle(eligibleStudents);
+
+      groups = Array.from({ length: count }, () => ({ members: [] }));
+
+      sorted.forEach((student) => {
+        const bestGroup = groups
+          .map((group, index) => ({
+            index,
+            total: useRatings ? group.members.reduce((sum, item) => sum + item.rating, 0) : 0,
+            size: group.members.length
+          }))
+          .sort((a, b) => {
+            if (useRatings) return a.total - b.total || a.size - b.size || Math.random() - 0.5;
+            return a.size - b.size || Math.random() - 0.5;
+          })[0];
+
+        groups[bestGroup.index].members.push(student);
+      });
+
+      save();
+      render();
+      renderGameScreen();
+      playSound("generate");
+      setStatus(useRatings ? "new game started by rating" : "new game started without ratings");
+      showGameScreen();
+    }
+
+    function showHomeScreen() {
+      gameScreen.classList.add("screen-hidden");
+      homeScreen.classList.remove("screen-hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showGameScreen() {
+      homeScreen.classList.add("screen-hidden");
+      gameScreen.classList.remove("screen-hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderGameScreen() {
+      gameGroups.innerHTML = "";
+      groupClickers.innerHTML = "";
+      const gameStudents = groups.flatMap((group) => group.members);
+      const useRatings = shouldUseRatings(gameStudents);
+
+      groups.forEach((group, index) => {
+        const isPendingWinner = pendingWinnerIndex === index;
+        const card = document.createElement("article");
+        card.className = "group-card";
+
+        const head = document.createElement("div");
+        head.className = "group-head";
+
+        const title = document.createElement("span");
+        title.textContent = groupLabel(index);
+
+        const meta = document.createElement("span");
+        meta.className = "group-meta";
+        const total = useRatings ? group.members.reduce((sum, student) => sum + student.rating, 0) : null;
+        meta.textContent = useRatings ? "rating " + total : "rating N/A";
+
+        const list = document.createElement("ul");
+        list.className = "member-list";
+
+        group.members.forEach((student) => {
+          const item = document.createElement("li");
+          const name = document.createElement("span");
+          name.textContent = student.name;
+          const rating = document.createElement("span");
+          rating.textContent = ratingLabel(student);
+          item.append(name, rating);
+          list.appendChild(item);
+        });
+
+        const actions = document.createElement("div");
+        actions.className = "group-actions";
+        const winner = document.createElement("button");
+        winner.type = "button";
+        winner.textContent = isPendingWinner ? "confirm win +1" : "winner +1";
+        if (isPendingWinner) winner.className = "winner-confirm";
+        winner.setAttribute("aria-label", (isPendingWinner ? "Confirm win for " : "Record win for ") + groupLabel(index));
+        winner.addEventListener("click", () => confirmWinningGroup(index));
+        actions.appendChild(winner);
+
+        head.append(title, meta);
+        card.append(head, list, actions);
+        gameGroups.appendChild(card);
+      });
+
+      renderGroupClickers();
+    }
+
+    function clearWinningGroupConfirm(shouldRender = true) {
+      pendingWinnerIndex = null;
+      if (pendingWinnerTimer) {
+        window.clearTimeout(pendingWinnerTimer);
+        pendingWinnerTimer = null;
+      }
+      if (shouldRender) renderGameScreen();
+    }
+
+    function armWinningGroupConfirm(index) {
+      pendingWinnerIndex = index;
+      if (pendingWinnerTimer) window.clearTimeout(pendingWinnerTimer);
+      renderGameScreen();
+      playSound("tap");
+      setStatus("tap confirm win for " + groupLabel(index));
+      pendingWinnerTimer = window.setTimeout(() => {
+        pendingWinnerTimer = null;
+        pendingWinnerIndex = null;
+        renderGameScreen();
+        setStatus("winner not recorded");
+      }, 5000);
+    }
+
+    function renderUndoWinButton() {
+      const canUndo = winHistory.length > 0;
+      if (!canUndo) pendingUndoWin = false;
+      undoWinButton.disabled = !canUndo;
+      undoWinButton.textContent = pendingUndoWin ? "confirm undo" : "undo win";
+      undoWinButton.classList.toggle("winner-confirm", pendingUndoWin);
+      undoWinButton.classList.toggle("secondary", !pendingUndoWin);
+      undoWinButton.setAttribute("aria-label", pendingUndoWin ? "Confirm undo last win" : "Undo last win");
+    }
+
+    function clearUndoWinConfirm(shouldRender = true) {
+      pendingUndoWin = false;
+      if (pendingUndoTimer) {
+        window.clearTimeout(pendingUndoTimer);
+        pendingUndoTimer = null;
+      }
+      if (shouldRender) renderUndoWinButton();
+    }
+
+    function armUndoWinConfirm(latest) {
+      pendingUndoWin = true;
+      if (pendingUndoTimer) window.clearTimeout(pendingUndoTimer);
+      renderUndoWinButton();
+      playSound("tap");
+      setStatus("tap confirm undo for " + latest.groupName);
+      pendingUndoTimer = window.setTimeout(() => {
+        pendingUndoTimer = null;
+        pendingUndoWin = false;
+        renderUndoWinButton();
+        setStatus("undo cancelled");
+      }, 5000);
+    }
+
+    function renderResetWinsButton() {
+      const canReset = hasCurrentWeekStats() || redoWinHistory.length > 0;
+      if (!canReset) pendingResetWins = false;
+      resetWinsButton.disabled = !canReset;
+      resetWinsButton.textContent = pendingResetWins ? "confirm reset" : "reset week";
+      resetWinsButton.classList.toggle("winner-confirm", pendingResetWins);
+      resetWinsButton.classList.toggle("danger", !pendingResetWins);
+      resetWinsButton.setAttribute("aria-label", pendingResetWins ? "Confirm reset weekly wins" : "Reset weekly wins");
+    }
+
+    function clearResetWinsConfirm(shouldRender = true) {
+      pendingResetWins = false;
+      if (pendingResetTimer) {
+        window.clearTimeout(pendingResetTimer);
+        pendingResetTimer = null;
+      }
+      if (shouldRender) renderResetWinsButton();
+    }
+
+    function armResetWinsConfirm() {
+      pendingResetWins = true;
+      if (pendingResetTimer) window.clearTimeout(pendingResetTimer);
+      renderResetWinsButton();
+      playSound("tap");
+      setStatus("tap confirm reset");
+      pendingResetTimer = window.setTimeout(() => {
+        pendingResetTimer = null;
+        pendingResetWins = false;
+        renderResetWinsButton();
+        setStatus("reset cancelled");
+      }, 5000);
+    }
+
+    function confirmWinningGroup(index) {
+      const group = groups[index];
+      if (!group || !group.members.length) {
+        playSound("error");
+        setStatus("choose a generated group");
+        return false;
+      }
+
+      if (pendingWinnerIndex !== index) {
+        armWinningGroupConfirm(index);
+        return false;
+      }
+
+      clearWinningGroupConfirm(false);
+      return recordWinningGroup(index);
+    }
+
+    function recordWinningGroup(index) {
+      const group = groups[index];
+      if (!group || !group.members.length) return false;
+      clearWinningGroupConfirm(false);
+      syncTimerRemaining();
+      const groupSnapshot = snapshotGroups();
+      const tallySnapshot = groupTallies.slice(0, groups.length).map((score) => normalizeWins(score));
+      const timerSnapshot = {
+        duration: timerDuration,
+        remaining: timerRemaining
+      };
+
+      group.members.forEach((member) => {
+        const student = findKnownStudent(member.id);
+        if (student) student.wins = getStudentWins(student) + 1;
+      });
+
+      winHistory.push({
+        groupName: groupLabel(index),
+        memberIds: group.members.map((member) => member.id),
+        memberNames: group.members.map((member) => member.name),
+        groupSnapshot,
+        groupTallies: tallySnapshot,
+        timerSnapshot,
+        recordedAt: new Date().toISOString()
+      });
+      playSound("win");
+      redoWinHistory = [];
+      clearUndoWinConfirm(false);
+      clearResetWinsConfirm(false);
+      groups = [];
+      groupTallies = [];
+      resetTimerState(false);
+      save();
+      render();
+      renderGameScreen();
+      showHomeScreen();
+      setStatus(groupLabel(index) + " win recorded. game reset.");
+      return true;
+    }
+
+    function undoLastWin() {
+      const latest = winHistory[winHistory.length - 1];
+      if (!latest) {
+        playSound("error");
+        setStatus("no win to undo");
+        return;
+      }
+
+      if (!pendingUndoWin) {
+        clearResetWinsConfirm(false);
+        armUndoWinConfirm(latest);
+        return;
+      }
+
+      clearUndoWinConfirm(false);
+      winHistory.pop();
+      latest.memberIds.forEach((id) => {
+        const student = findKnownStudent(id);
+        if (student) student.wins = Math.max(0, getStudentWins(student) - 1);
+      });
+
+      redoWinHistory.push(latest);
+      const restoredGame = restoreGroups(latest.groupSnapshot);
+      if (restoredGame) restoreGroupTallies(latest);
+      if (restoredGame) restoreTimer(latest.timerSnapshot);
+      save();
+      render();
+      if (restoredGame) {
+        renderGameScreen();
+        showGameScreen();
+      }
+      playSound("undo");
+      setStatus(restoredGame ? "last win undone. pick the right winner." : "last win undone");
+    }
+
+    function redoLastWin() {
+      clearUndoWinConfirm(false);
+      clearResetWinsConfirm(false);
+      const latest = redoWinHistory.pop();
+      if (!latest) {
+        playSound("error");
+        setStatus("no win to redo");
+        return;
+      }
+
+      latest.memberIds.forEach((id) => {
+        const student = findKnownStudent(id);
+        if (student) student.wins = getStudentWins(student) + 1;
+      });
+
+      winHistory.push({
+        ...latest,
+        redoneAt: new Date().toISOString()
+      });
+      save();
+      render();
+      playSound("redo");
+      setStatus("win redone");
+    }
+
+    function resetWeeklyWins() {
+      const canReset = hasCurrentWeekStats() || redoWinHistory.length > 0;
+      if (!canReset) {
+        playSound("error");
+        setStatus("nothing to reset");
+        return;
+      }
+
+      if (!pendingResetWins) {
+        clearUndoWinConfirm(false);
+        armResetWinsConfirm();
+        return;
+      }
+
+      const archivedWeek = archiveCurrentWeek();
+      getAllKnownStudents().forEach((student) => {
+        student.wins = 0;
+      });
+      winHistory = [];
+      redoWinHistory = [];
+      groups = [];
+      groupTallies = [];
+      resetTimerState(false);
+      clearUndoWinConfirm(false);
+      clearResetWinsConfirm(false);
+      save();
+      render();
+      playSound("reset");
+      setStatus(archivedWeek ? "week " + archivedWeek.weekNumber + " stats saved" : "weekly wins reset");
+    }
+
+    addStudentButton.addEventListener("click", () => {
+      const added = addStudent(studentName.value, studentRating.value);
+      studentName.value = "";
+      studentName.focus();
+      save();
+      render();
+      playSound(added ? "add" : "error");
+      setStatus(added ? "student added" : "student already existed");
+    });
+
+    studentName.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addStudentButton.click();
+    });
+
+    sortStudentsButton.addEventListener("click", () => {
+      students.sort((a, b) => a.name.localeCompare(b.name));
+      save();
+      render();
+      playSound("tap");
+      setStatus("students sorted");
+    });
+
+    groupCountInput.addEventListener("change", () => {
+      groupCountInput.value = String(getGroupCount());
+      save();
+      updateStats();
+      playSound("tap");
+    });
+
+    generateGroupsButton.addEventListener("click", generateFairGroups);
+    timerStartButton.addEventListener("click", startTimer);
+    timerPauseButton.addEventListener("click", pauseTimer);
+    timerResetButton.addEventListener("click", resetTimer);
+    redoWinButton.addEventListener("click", redoLastWin);
+    undoWinButton.addEventListener("click", undoLastWin);
+    resetWinsButton.addEventListener("click", resetWeeklyWins);
+    backToHomeButton.addEventListener("click", () => {
+      clearWinningGroupConfirm(false);
+      groups = [];
+      groupTallies = [];
+      resetTimerState(false);
+      save();
+      renderGameScreen();
+      showHomeScreen();
+      playSound("cancel");
+      setStatus("game closed");
+    });
+
+    load();
+    if (!students.length) {
+      ["Logan", "Weston", "Danny", "Ethan", "Fabian", "Ari"].forEach((name) => addStudent(name, "na"));
+    }
+    render();
+  </script>
+</body>
+</html>
